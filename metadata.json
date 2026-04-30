@@ -1,0 +1,6 @@
+{
+  "name": "CivicPulse",
+  "description": "An interactive AI-powered assistant that helps users understand the election process, timelines, and registration steps with ease.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["GEMINI_AI", "INTERACTIVE_TIMELINE"]
+}
