@@ -55,7 +55,12 @@ export default function ChatInterface() {
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+          <div 
+            ref={scrollRef} 
+            className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth"
+            aria-live="polite"
+            aria-atomic="false"
+          >
             <AnimatePresence initial={false}>
               {messages.map((m, i) => (
                 <motion.div

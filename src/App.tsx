@@ -10,6 +10,7 @@ import PollingLocator from './components/PollingLocator';
 import ChatInterface from './components/ChatInterface';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+import GoogleCalendarButton from './components/GoogleCalendarButton';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <ChatInterface />
         <FAQ />
       </main>
+      <GoogleCalendarButton />
       <Footer />
     </div>
   );

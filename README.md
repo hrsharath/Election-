@@ -16,7 +16,10 @@ CivicPulse is an interactive, AI-powered assistant designed to help voters navig
 - **Polling Site Locator**: Integrated a dynamic map interface using Google Maps Embed API to provide local utility for voters.
 - **Deep Linking**: Enhanced accessibility by providing direct "intent" links into the Google Maps application.
 
-### 3. Firebase & Firestore (Zero-Trust Security)
+### 3. Google Calendar
+- **Save the Date**: Implemented a "Save Election Day" feature that dynamically creates Google Calendar events to ensure citizens don't miss their opportunity to vote.
+
+### 4. Firebase & Firestore (Zero-Trust Security)
 - **Scalable Feedback**: Real-time Firestore integration for gathering user sentiment.
 - **Security Protocols**: Implemented the "Eight Pillars" of Firestore hardening, including schema strictness and temporal integrity.
 
@@ -32,11 +35,16 @@ We implemented a locked-down permission model:
 - **Prompt Injection Guard**: Strict system instruction barriers.
 - **Verification Clause**: Every AI response includes a disclaimer prompting users to verify specifics with local authorities.
 
+## Testing Strategy
+- **Unit Testing**: Integrated **Vitest** and **React Testing Library** for component and service validation.
+- **Security Assertion Test**: `firestore.rules.test.ts` for policy verification.
+
 ## Accessibility & Inclusive Design
+- **Skip Links**: Implemented skip-to-content navigation for keyboard users.
 - **Semantic Structure**: Proper use of landmarks (`<header>`, `<main>`, `<footer/>`).
 - **ARIA Compliance**:
   - Interactive accordions (FAQ) use `aria-expanded` and `aria-controls`.
-  - Chat interface includes `aria-label` for inputs and forms.
+  - Chat interface includes `aria-live` regions and `aria-label` for inputs.
   - Mobile menus are fully navigable via screen readers.
 - **High Contrast**: Adheres to readability standards with appropriate color contrast.
 - **Responsive**: Fluid layouts that scale from mobile devices to ultra-wide desktops.
@@ -44,7 +52,7 @@ We implemented a locked-down permission model:
 ## Approach & Logic
 - **Architecture**: Modular React components styled with **Tailwind CSS**.
 - **Animation**: Used **Motion** for subtle, non-distracting transitions that guide the user's eye along the timeline.
-- **Utility**: Added direct "Find Sites" deep-links to Google Search to bridge the gap between information and action.
+- **Utility**: Added direct "Find Sites" deep-links to Google Search and Google Maps to bridge the gap between information and action.
 
 ## Assumptions Made
 1. **Neutrality**: Assumes a non-partisan stance is the most effective way to help the broadest range of users.
