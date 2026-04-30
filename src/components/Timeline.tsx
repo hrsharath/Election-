@@ -40,7 +40,18 @@ export default function Timeline() {
                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
                     0{index + 1}
                    </div>
-                   <button className="text-xs font-bold text-blue-600 hover:underline">Learn More →</button>
+                   {step.id === 'vote' ? (
+                     <a 
+                       href="https://www.google.com/search?q=polling+locations+near+me" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                     >
+                       Find Sites <LucideIcons.ExternalLink size={10} />
+                     </a>
+                   ) : (
+                     <button className="text-xs font-bold text-blue-600 hover:underline">Learn More →</button>
+                   )}
                 </div>
               </motion.div>
             );

@@ -4,8 +4,15 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function getElectionAdvice(prompt: string, history: { role: 'user' | 'model', content: string }[] = []) {
   try {
-    const chat = ai.chats.create({
+    const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
+      contents: [
+        ...history.map(item => ({
+          role: item.role === 'user' ? 'user' : 'model',
+          parts: [{ text: item.content }]
+        })),
+        { role: 'user', parts: [{ text: prompt }] }
+      ],
       config: {
         systemInstruction: `You are CivicPulse AI, a professional, neutral, and helpful assistant dedicated to explaining the election process. 
 Your goal is to help users understand:
@@ -26,39 +33,20 @@ Avoid:
 - Making definitive claims about future election outcomes.
 
 If asked about specific local rules, remind users that requirements vary by jurisdiction and suggest checking their official local election board website.`,
-      },
+        tools: [{ googleSearch: {} }]
+      }
     });
 
-    // We can't use sendMessageStream for simple non-streaming responses easily without a loop,
-    // so we'll use generateContent for now, or just implement streaming if the UI supports it.
-    const result = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [
-        ...history.map(item => ({
-          role: item.role,
-          parts: [{ text: item.content }]
-        })),
-        { role: 'user', parts: [{ text: prompt }] }
-      ]
-    });
-
-    return result.text || "I'm sorry, I couldn't generate a response at this time. Please try again.";
+    return response.text || "I'm sorry, I couldn't generate a response at this time.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Error: Unable to connect to the election assistant service. Please check your connection.";
+    return "Error: Unable to connect to the election assistant. Please check your connection.";
   }
 }
 
 export async function* getElectionAdviceStream(prompt: string, history: { role: 'user' | 'model', content: string }[] = []) {
   try {
-    const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
-      config: {
-        systemInstruction: "You are CivicPulse AI, a neutral election process expert. Help users with registration, voting steps, and deadlines at a simple 8th-grade level.",
-      },
-    });
-
-    const stream = await ai.models.generateContentStream({
+    const response = await ai.models.generateContentStream({
       model: "gemini-3-flash-preview",
       contents: [
         ...history.map(item => ({
@@ -66,10 +54,14 @@ export async function* getElectionAdviceStream(prompt: string, history: { role: 
           parts: [{ text: item.content }]
         })),
         { role: 'user', parts: [{ text: prompt }] }
-      ]
+      ],
+      config: {
+        systemInstruction: "You are CivicPulse AI, a neutral election process expert. Help users with registration, voting steps, and deadlines at a simple 8th-grade level.",
+        tools: [{ googleSearch: {} }]
+      }
     });
 
-    for await (const chunk of stream) {
+    for await (const chunk of response) {
       if (chunk.text) {
         yield chunk.text;
       }

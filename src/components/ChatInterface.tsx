@@ -1,11 +1,15 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Bot, User, Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Loader2, Sparkles, AlertCircle, ThumbsUp, ThumbsDown, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { getElectionAdviceStream } from '../services/geminiService';
+import { db } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
+  id?: string;
+  feedbackSubmitted?: boolean;
 }
 
 export default function ChatInterface() {
@@ -21,6 +25,26 @@ export default function ChatInterface() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleFeedback = async (messageIndex: number, helpful: boolean) => {
+    const message = messages[messageIndex];
+    if (message.feedbackSubmitted) return;
+
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        messageId: `msg_${Date.now()}_${messageIndex}`,
+        helpful,
+        query: messages[messageIndex - 1]?.content || 'Initial Greeting',
+        timestamp: serverTimestamp(),
+      });
+
+      setMessages(prev => prev.map((m, i) => 
+        i === messageIndex ? { ...m, feedbackSubmitted: true } : m
+      ));
+    } catch (error) {
+      console.error("Feedback Error:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,16 +92,23 @@ export default function ChatInterface() {
 
         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl shadow-blue-900/5 flex flex-col h-[600px]">
           {/* Chat Header */}
-          <div className="p-6 border-b border-gray-50 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-300">
-              <Bot size={20} />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900">CivicPulse AI</p>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Assistant</p>
+          <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-300">
+                <Bot size={20} />
               </div>
+              <div>
+                <p className="font-bold text-gray-900">CivicPulse AI</p>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Assistant</p>
+                </div>
+              </div>
+            </div>
+            {/* Database indicator */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg">
+               <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cloud Database Connected</span>
             </div>
           </div>
 
@@ -91,21 +122,48 @@ export default function ChatInterface() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-[85%] sm:max-w-[70%] flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center ${m.role === 'user' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
-                      {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                  <div className={`max-w-[85%] sm:max-w-[70%] flex flex-col gap-2 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center ${m.role === 'user' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                      </div>
+                      <div className={`p-4 rounded-2xl text-[15px] leading-relaxed relative ${m.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-gray-50 text-gray-800 rounded-tl-none'}`}>
+                        {m.role === 'model' && m.content === '' ? (
+                          <div className="flex gap-1 py-1">
+                            <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></span>
+                            <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                          </div>
+                        ) : (
+                          m.content
+                        )}
+                      </div>
                     </div>
-                    <div className={`p-4 rounded-2xl text-[15px] leading-relaxed ${m.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-gray-50 text-gray-800 rounded-tl-none'}`}>
-                      {m.role === 'model' && m.content === '' ? (
-                        <div className="flex gap-1 py-1">
-                          <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></span>
-                          <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                          <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        </div>
-                      ) : (
-                        m.content
-                      )}
-                    </div>
+                    
+                    {/* Feedback UI for Assistant messages (except the typing one) */}
+                    {m.role === 'model' && m.content !== '' && (
+                      <div className="flex items-center gap-2 ml-11">
+                        {m.feedbackSubmitted ? (
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-widest"><Check size={10}/> Feedback Received</span>
+                        ) : (
+                          <>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-1">Helpful?</span>
+                            <button 
+                              onClick={() => handleFeedback(i, true)}
+                              className="p-1 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                            >
+                              <ThumbsUp size={12} />
+                            </button>
+                            <button 
+                              onClick={() => handleFeedback(i, false)}
+                              className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <ThumbsDown size={12} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}

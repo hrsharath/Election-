@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "Feedback": {
+      "title": "Feedback",
+      "description": "User feedback on AI responses.",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "helpful": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "query": { "type": "string" }
+      },
+      "required": ["messageId", "helpful", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/feedback/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "Collection of feedback for AI-generated answers."
+    }
+  }
+}

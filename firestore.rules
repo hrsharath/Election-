@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper for IDs
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function incoming() { return request.resource.data; }
+    function isSignedIn() { return request.auth != null; }
+
+    function isValidFeedback(data) {
+      return data.keys().hasAll(['helpful', 'messageId', 'timestamp', 'query'])
+        && data.keys().size() == 4
+        && data.helpful is bool
+        && data.messageId is string
+        && data.messageId.size() <= 256
+        && data.query is string
+        && data.query.size() <= 2000
+        && data.timestamp == request.time;
+    }
+
+    // Feedback collection: Anyone can create (submit feedback), but no one can read or update/delete
+    match /feedback/{feedbackId} {
+      allow create: if isValidId(feedbackId) && isValidFeedback(incoming());
+      allow read, update, delete: if false;
+    }
+  }
+}

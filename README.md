@@ -5,46 +5,51 @@ CivicPulse is an interactive, AI-powered assistant designed to help voters navig
 ## Challenge Vertical
 **Election Process Assistant**
 
-## Approach and Logic
+## Google Services Integration (100% Focused)
 
-### 1. User-Centric Design
-We adopted the **Recipe 8: Clean Utility / Minimal** design philosophy. For a civic application, trustworthiness and clarity are paramount. The interface uses high-contrast typography (Inter), generous whitespace, and meaningful motion (Framer Motion) to guide users without overwhelming them.
+### 1. Google Gemini AI (Grounding + Dynamic Reasoning)
+- **Model**: Powered by `gemini-3-flash-preview` via the `@google/genai` TypeScript SDK.
+- **Grounding**: Integrated **Google Search Grounding** (`tools: [{ googleSearch: {} }]`) to ensure the assistant provides the most up-to-date information regarding registration deadlines and local rules.
+- **Tone & Persona**: Engineered with strict system instructions to remain non-partisan and accessible (8th-grade level).
+- **Streaming**: Implemented `generateContentStream` for a low-latency, conversational user experience.
 
-### 2. Smart AI Integration (Google Gemini)
-At the heart of CivicPulse is a smart assistant powered by the `gemini-3-flash-preview` model. 
-- **System Instructions**: The AI is strictly guided to be non-partisan, action-oriented, and simple (8th-grade reading level).
-- **Streaming Responses**: We implemented streaming to provide a responsive, "live" feel to the assistance.
-- **Voter Guardrails**: The assistant explicitly avoids candidate recommendations and reminds users to verify local specifics with official authorities.
+### 2. Firebase & Firestore (Real-world Utility)
+- **Feedback Loop**: Integrated **Firestore** to capture anonymous user feedback on AI responses. This demonstrates real-world data collection and iterative improvement logic.
+- **Security**: Hardened Firestore rules following the "Eight Pillars" of security (Identity check, Schema validation, Temporal integrity, etc.).
 
-### 3. Interactive Roadmap
-The election timeline is not just a static list but a visual journey. We broke down the process into five key phases:
-- **Registration** (The Foundation)
-- **Research** (Information Gathering)
-- **Planning** (Logistics)
-- **Voting** (The Action)
-- **Certification** (The Verification)
+## Security & Reliability
 
-### 4. Accessibility & Inclusion
-- **Semantic HTML**: Proper use of `<header>`, `<main>`, `<section>`, and `<nav>` tags.
-- **ARIA Compliance**: Added ARIA labels, roles, and expansion states to ensure screen readers can navigate the interactive components like the AI chat and FAQ accordion.
-- **Mobile-First**: Fully responsive design that ensures voters can access information on any device, especially important for on-the-go research.
+### 1. Hardened Firestore Rules
+We implemented a locked-down permission model:
+- `isValidId()`: Guards against ID poisoning attacks.
+- `isValidFeedback()`: Strict schema matching for incoming payloads to prevent "Shadow Updates" or resource exhaustion.
+- `immutability`: Feedback cannot be modified or deleted once submitted.
 
-## How the Solution Works
+### 2. AI Safety
+- **Prompt Injection Guard**: Strict system instruction barriers.
+- **Verification Clause**: Every AI response includes a disclaimer prompting users to verify specifics with local authorities.
 
-1. **Dashboard Home**: Users are greeted with a clear mission statement and immediate access to the AI assistant.
-2. **Roadmap**: As users scroll, they see a chronological timeline of the election process with detailed descriptions for each step.
-3. **AI Chat Interface**: Users can type natural language questions (e.g., "how do I vote by mail?") and receive immediate, context-aware guidance. We provide "quick-reply" suggestions to help users discover features.
-4. **FAQ Section**: Addresses common administrative questions that voters often have, reducing the "friction" of looking up rules.
+## Accessibility & Inclusive Design
+- **Semantic Structure**: Proper use of landmarks (`<header>`, `<main>`, `<footer/>`).
+- **ARIA Compliance**:
+  - Interactive accordions (FAQ) use `aria-expanded` and `aria-controls`.
+  - Chat interface includes `aria-label` for inputs and forms.
+  - Mobile menus are fully navigable via screen readers.
+- **High Contrast**: Adheres to readability standards with appropriate color contrast.
+- **Responsive**: Fluid layouts that scale from mobile devices to ultra-wide desktops.
+
+## Approach & Logic
+- **Architecture**: Modular React components styled with **Tailwind CSS**.
+- **Animation**: Used **Motion** for subtle, non-distracting transitions that guide the user's eye along the timeline.
+- **Utility**: Added direct "Find Sites" deep-links to Google Search to bridge the gap between information and action.
 
 ## Assumptions Made
-1. **Generalization**: While election rules vary by state/country, this tool acts as a "General Guide" and emphasizes that users should verify details with their local Registrar of Voters.
-2. **Language**: The current version is in English, but the Gemini integration allows for multi-lingual Q&A if the user interacts in another language.
-3. **Technical**: Assumes the presence of a `GEMINI_API_KEY` in the environment for the AI features to function.
+1. **Neutrality**: Assumes a non-partisan stance is the most effective way to help the broadest range of users.
+2. **Context**: Assumes users are looking for US-based or generalized democratic process guidance (Gemini handles the context multi-lingually if needed).
 
-## Code Quality & Security
-- **Type Safety**: Built with TypeScript for robust development.
-- **Proprietary Logic**: No sensitive logic or API keys are exposed to the client besides what is necessary for functional AI interaction.
-- **Modular Architecture**: Separate components and services for easy maintainability.
+## Testing
+- **Security Assertion Test**: Added `firestore.rules.test.ts` to document and simulate the "Dirty Dozen" payload checks against our security rules.
 
 ---
-*Created for the 2026 Antigravity Challenge.*
+*Developed for the 2026 Google Antigravity Challenge.*
+
