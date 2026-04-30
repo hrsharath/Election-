@@ -1,82 +1,24 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, Bot, User, Loader2, Sparkles, AlertCircle, ThumbsUp, ThumbsDown, Check } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
-import { getElectionAdviceStream } from '../services/geminiService';
-import { db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
-interface Message {
-  role: 'user' | 'model';
-  content: string;
-  id?: string;
-  feedbackSubmitted?: boolean;
-}
+import React from 'react';
+import { useChat } from '../hooks/useChat';
+import { cn } from '../lib/utils';
 
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', content: "Hi! I'm your CivicPulse AI Assistant. Ask me anything about voter registration, election deadlines, or how the voting process works." }
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const { 
+    messages, 
+    input, 
+    setInput, 
+    isLoading, 
+    scrollRef, 
+    sendMessage, 
+    handleFeedback 
+  } = useChat();
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleFeedback = async (messageIndex: number, helpful: boolean) => {
-    const message = messages[messageIndex];
-    if (message.feedbackSubmitted) return;
-
-    try {
-      await addDoc(collection(db, 'feedback'), {
-        messageId: `msg_${Date.now()}_${messageIndex}`,
-        helpful,
-        query: messages[messageIndex - 1]?.content || 'Initial Greeting',
-        timestamp: serverTimestamp(),
-      });
-
-      setMessages(prev => prev.map((m, i) => 
-        i === messageIndex ? { ...m, feedbackSubmitted: true } : m
-      ));
-    } catch (error) {
-      console.error("Feedback Error:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const userMessage = input.trim();
+    sendMessage(input);
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setIsLoading(true);
-
-    try {
-      setMessages(prev => [...prev, { role: 'model', content: '' }]);
-      
-      let fullResponse = '';
-      const stream = getElectionAdviceStream(userMessage, messages);
-      
-      for await (const chunk of stream) {
-        fullResponse += chunk;
-        setMessages(prev => {
-          const last = prev[prev.length - 1];
-          return [
-            ...prev.slice(0, -1),
-            { ...last, content: fullResponse }
-          ];
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { role: 'model', content: "I'm sorry, I encountered an error. Please try again later." }]);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -120,14 +62,29 @@ export default function ChatInterface() {
                   key={i}
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={cn(
+                    "flex",
+                    m.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}
                 >
-                  <div className={`max-w-[85%] sm:max-w-[70%] flex flex-col gap-2 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center ${m.role === 'user' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
+                  <div className={cn(
+                    "max-w-[85%] sm:max-w-[70%] flex flex-col gap-2",
+                    m.role === 'user' ? 'items-end' : 'items-start'
+                  )}>
+                    <div className={cn(
+                      "flex gap-3",
+                      m.role === 'user' ? 'flex-row-reverse' : ''
+                    )}>
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center",
+                        m.role === 'user' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'
+                      )}>
                         {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                       </div>
-                      <div className={`p-4 rounded-2xl text-[15px] leading-relaxed relative ${m.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-gray-50 text-gray-800 rounded-tl-none'}`}>
+                      <div className={cn(
+                        "p-4 rounded-2xl text-[15px] leading-relaxed relative shadow-sm",
+                        m.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-gray-50 text-gray-800 rounded-tl-none'
+                      )}>
                         {m.role === 'model' && m.content === '' ? (
                           <div className="flex gap-1 py-1">
                             <span className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></span>

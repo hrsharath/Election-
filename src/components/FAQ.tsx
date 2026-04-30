@@ -1,7 +1,8 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { FAQ_DATA } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '../lib/utils';
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -21,11 +22,15 @@ export default function FAQ() {
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 aria-expanded={openIndex === i}
                 aria-controls={`faq-answer-${i}`}
-                className="w-full px-8 py-6 flex items-center justify-between text-left"
+                id={`faq-btn-${i}`}
+                className="w-full px-8 py-6 flex items-center justify-between text-left group"
               >
-                <span className="font-bold text-gray-900">{faq.question}</span>
-                <div className={`p-1 rounded-lg transition-colors ${openIndex === i ? 'bg-blue-50 text-blue-600' : 'text-gray-400 font-bold'}`}>
-                  {openIndex === i ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <span className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{faq.question}</span>
+                <div className={cn(
+                  "p-1 rounded-lg transition-all",
+                  openIndex === i ? 'bg-blue-50 text-blue-600 rotate-180' : 'text-gray-400 group-hover:text-blue-600'
+                )}>
+                  <ChevronDown size={20} />
                 </div>
               </button>
               
@@ -34,12 +39,13 @@ export default function FAQ() {
                   <motion.div
                     id={`faq-answer-${i}`}
                     role="region"
+                    aria-labelledby={`faq-btn-${i}`}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="px-8 pb-8 text-gray-500 leading-relaxed">
+                    <div className="px-8 pb-8 text-gray-500 leading-relaxed font-sans">
                       {faq.answer}
                     </div>
                   </motion.div>

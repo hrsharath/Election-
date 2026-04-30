@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { ELECTION_STEPS } from '../constants';
 import * as LucideIcons from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export default function Timeline() {
   return (
@@ -8,7 +9,7 @@ export default function Timeline() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-16 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Election Roadmap</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">A step-by-step breakdown of your journey from registration to result certification.</p>
+          <p className="text-gray-500 max-w-xl mx-auto font-sans">A step-by-step breakdown of your journey from registration to result certification.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
@@ -21,14 +22,17 @@ export default function Timeline() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="relative bg-white p-8 rounded-3xl border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all group"
+                className="relative bg-white p-8 rounded-3xl border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all group overflow-hidden"
               >
                 {index < ELECTION_STEPS.length - 1 && (
                   <div className="hidden lg:block absolute top-[40px] left-[calc(100%-12px)] w-full h-[1px] border-t-2 border-dashed border-gray-200 z-0"></div>
                 )}
                 
                 <div className="relative z-10">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <div className={cn(
+                    "w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm transition-all duration-300",
+                    "group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-6"
+                  )}>
                     {Icon && <Icon size={24} />}
                   </div>
                   <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 block">{step.date}</span>

@@ -8,14 +8,17 @@ CivicPulse is an interactive, AI-powered assistant designed to help voters navig
 ## Google Services Integration (100% Focused)
 
 ### 1. Google Gemini AI (Grounding + Dynamic Reasoning)
-- **Model**: Powered by `gemini-3-flash-preview` via the `@google/genai` TypeScript SDK.
-- **Grounding**: Integrated **Google Search Grounding** (`tools: [{ googleSearch: {} }]`) to ensure the assistant provides the most up-to-date information regarding registration deadlines and local rules.
-- **Tone & Persona**: Engineered with strict system instructions to remain non-partisan and accessible (8th-grade level).
-- **Streaming**: Implemented `generateContentStream` for a low-latency, conversational user experience.
+- **Model**: Powered by `gemini-3-flash-preview` via the modern `@google/genai` TypeScript SDK.
+- **Grounding**: Integrated **Google Search Grounding** to provide live, factual data about election cycles.
+- **Efficiency**: Used **Streaming Responses** to reduce perceived latency and provide immediate feedback.
 
-### 2. Firebase & Firestore (Real-world Utility)
-- **Feedback Loop**: Integrated **Firestore** to capture anonymous user feedback on AI responses. This demonstrates real-world data collection and iterative improvement logic.
-- **Security**: Hardened Firestore rules following the "Eight Pillars" of security (Identity check, Schema validation, Temporal integrity, etc.).
+### 2. Google Maps Platform
+- **Polling Site Locator**: Integrated a dynamic map interface using Google Maps Embed API to provide local utility for voters.
+- **Deep Linking**: Enhanced accessibility by providing direct "intent" links into the Google Maps application.
+
+### 3. Firebase & Firestore (Zero-Trust Security)
+- **Scalable Feedback**: Real-time Firestore integration for gathering user sentiment.
+- **Security Protocols**: Implemented the "Eight Pillars" of Firestore hardening, including schema strictness and temporal integrity.
 
 ## Security & Reliability
 
